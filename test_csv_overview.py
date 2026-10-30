@@ -63,12 +63,31 @@ class OverviewTests(unittest.TestCase):
                     self.assertEqual(result.stdout, "")
                     self.assertNotIn("Traceback", result.stderr)
 
+    def test_nonempty_cli_counts(self):
+        cases = [
+            ("", "列名：（无）\n数据行数：0\n每列空值数量：\n每列非空值数量：\n"),
+            ("甲,乙\n", "每列非空值数量：\n  甲：0\n  乙：0\n"),
+            ("甲,乙\n0,NULL\n ,\n值\n\n",
+             "每列非空值数量：\n  甲：2\n  乙：1\n"),
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "中文.csv"
+            for content, expected in cases:
+                with self.subTest(content=content):
+                    path.write_text(content, encoding="utf-8")
+                    output = io.StringIO()
+                    with contextlib.redirect_stdout(output):
+                        self.assertEqual(main([str(path)]), 0)
+                    self.assertIn(expected, output.getvalue())
+
     def test_example_cli(self):
         output = io.StringIO()
         with contextlib.redirect_stdout(output):
             self.assertEqual(main([str(Path(__file__).parent / "examples/sample.csv")]), 0)
         self.assertIn("数据行数：3", output.getvalue())
         self.assertIn("备注：2", output.getvalue())
+        self.assertIn("每列非空值数量：\n  姓名：3\n  城市：2\n  备注：1\n",
+                      output.getvalue())
 
 
 if __name__ == "__main__":

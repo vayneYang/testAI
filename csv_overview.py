@@ -25,7 +25,7 @@ def summarize(path):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="显示 CSV 列名、数据行数和每列空值数量")
+    parser = argparse.ArgumentParser(description="显示 CSV 列名、数据行数和每列空值及非空值数量")
     parser.add_argument("path", help="UTF-8 编码的 CSV 文件路径")
     args = parser.parse_args(argv)
     try:
@@ -38,6 +38,9 @@ def main(argv=None):
     print("每列空值数量：")
     for column, count in zip(columns, counts):
         print(f"  {column}：{count}")
+    print("每列非空值数量：")
+    for column, count in zip(columns, counts):
+        print(f"  {column}：{rows - count}")
     return 0
 
 
